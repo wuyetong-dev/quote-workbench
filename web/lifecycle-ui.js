@@ -1,0 +1,12 @@
+(function(root){
+'use strict';
+function mount(){let b=$('#issued-versions');if(!b&&$('#quote-history')){b=document.createElement('button');b.id='issued-versions';b.textContent='正式版本与修订';$('#quote-history').after(b);}if(b)b.onclick=()=>busy(open);}
+async function open(){
+ await saveNow();const versions=await api('issued/'+encodeURIComponent(q.id));
+ modal('正式版本与修订',versions.length?versions.map((v,i)=>`<article class="review-card"><h3>正式版 V${v.version} · ¥${money(v.grandTotal)}</h3><p>${E(new Date(v.issuedAt).toLocaleString())} · ${E(v.quote.title)}</p><button data-compare-issued="${i}">与当前稿比较</button><button data-copy-issued="${i}">从此版新建修订稿</button></article>`).join(''):'<p>本项目还没有正式发出版本。正式导出通过核对后会自动冻结一份，后续修改和价格更新保留原版。</p>','<button id="issued-back">返回</button>',true);
+ $('#issued-back').onclick=closeModal;
+ document.querySelectorAll('[data-copy-issued]').forEach(b=>b.onclick=()=>{const v=versions[Number(b.dataset.copyIssued)];QuoteWorkflow.checkpoint('从正式版建立修订');q=M.copy(v.quote);q.title=v.quote.title+' · 修订';q.revisionOf={quoteId:v.quoteId,version:v.version,signature:v.signature};changed();closeModal();renderQuote();});
+ document.querySelectorAll('[data-compare-issued]').forEach(b=>b.onclick=()=>{const v=versions[Number(b.dataset.compareIssued)],old=new Map(v.quote.rows.map(r=>[r.id,r])),changes=[];for(const row of q.rows){const previous=old.get(row.id);if(!previous){changes.push([row.name,'新增']);continue;}const fields=['name','spec','quantity','unit','basePrice','override','selected','engineeringBill'];const changedFields=fields.filter(k=>JSON.stringify(previous[k])!==JSON.stringify(row[k]));if(changedFields.length)changes.push([row.name,changedFields.map(k=>({name:'名称',spec:'规格',quantity:'数量',unit:'单位',basePrice:'基础价',override:'本次价',selected:'供货范围',engineeringBill:'工程组成'}[k])+': '+(typeof row[k]==='object'?'已变更':String(previous[k]??'空')+' → '+String(row[k]??'空'))).join('；')]);old.delete(row.id);}for(const row of old.values())changes.push([row.name,'已删除']);const now=M.calculate(q);modal('与正式版 V'+v.version+' 比较',`<p>原含税/总价 ¥${money(v.grandTotal)} → 当前 ¥${money(now.grandTotal)}，变化 ¥${money(now.grandTotal-v.grandTotal)}</p>${changes.length?changes.map(([name,change])=>`<p><strong>${E(name)}</strong>：${E(change)}</p>`).join(''):'<p>明细未变化。</p>'}`,'<button id="issued-compare-back">返回版本列表</button>',true);$('#issued-compare-back').onclick=()=>busy(open);});
+}
+root.QuoteLifecycleUI={mount,open};
+})(window);

@@ -1,0 +1,17 @@
+[
+ {"name":"过滤机","unit":"台","text":"过滤机2.2KW 3台","quantity":3},
+ {"name":"过滤机","unit":"台","text":"过滤机 功率2.2kW 流量6T/H 共三台","quantity":3},
+ {"name":"循环泵","unit":"台","text":"循环泵 型号 A100 共两台","quantity":2},
+ {"name":"循环泵","unit":"台","text":"循环泵6T/H","quantity":null},
+ {"name":"循环泵","unit":"台","text":"循环泵A100台","quantity":null},
+ {"name":"循环泵","unit":"台","text":"循环泵2.2kW；过滤机3台","quantity":null},
+ {"name":"过滤机","unit":"台","text":"每槽过滤机2.2kW 3台","quantity":null},
+ {"name":"过滤机","unit":"台","text":"过滤机2台；过滤机3台","quantity":null},
+ {"name":"过滤机","unit":"台","text":"过滤机3台；循环泵2台","quantity":3},
+ {"name":"过滤机","unit":"台","text":"过滤机数量：零台","quantity":0},
+ {"name":"过滤机","unit":"台","text":"三台 2.2kW 过滤机","quantity":3},
+ {"name":"过滤机","unit":"台","text":"2.2kW 过滤机 三台","quantity":3},
+ {"name":"过滤机","unit":"台","text":"3台循环泵；过滤机6T/H","quantity":null},
+ {"name":"过滤机","unit":"台","text":"A3台过滤机","quantity":null},
+ {"name":"过滤机","unit":"台","text":"每槽三台过滤机","quantity":null}
+]

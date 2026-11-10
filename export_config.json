@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "templateId": "customer-industrial-quotation",
+  "templateName": "工业设备报价单",
+  "workbook": {
+    "sheets": [
+      {"id": "summary", "name": "合计", "content": ["company", "project", "customer", "chapterTotals", "totals", "amountInWords", "terms", "signatures"]},
+      {"id": "details", "name": "{section.title}", "fallbackName": "报价明细", "repeatBy": "sections", "content": ["company", "project", "customer", "columnHeader", "chapters", "totals", "amountInWords"]}
+    ],
+    "page": {"paperSize": "A4", "orientation": "portrait", "fitToWidth": 1, "fitToHeight": 0, "repeatColumnHeader": true},
+    "title": {"text": "{quote.title}报价单", "merge": "allColumns", "style": "title"},
+    "companySource": "quote.supplier",
+    "companyFallbackSource": "companyProfile.name"
+  },
+  "columns": [
+    {"key": "code", "label": "序号", "width": 12, "align": "center", "format": "@"},
+    {"key": "description", "label": "名称及配置说明", "width": 68, "align": "left", "wrapText": true},
+    {"key": "quantity", "label": "数量", "width": 9, "align": "center", "format": "0.###############"},
+    {"key": "unit", "label": "单位", "width": 8, "align": "center"},
+    {"key": "unitPrice", "label": "单价", "width": 15, "align": "right", "format": "#,##0.00"},
+    {"key": "amount", "label": "金额", "width": 18, "align": "right", "format": "#,##0.00"}
+  ],
+  "sections": {
+    "source": "validatedExportView.productionLines",
+    "titleField": "title",
+    "chapterDefinitionsField": "chapters",
+    "fallback": "singleSection",
+    "chapterFallback": "chapters.definitions",
+    "restartNumberingPerSection": true,
+    "summaryScope": "allSections",
+    "sharedItem": "renderOnceInAssignedSection"
+  },
+  "chapters": {
+    "numberingMode": "continuous",
+    "definitions": [
+      {"id": "handling", "number": 1, "title": "一、自动龙门行车部分", "match": {"any": [{"field": "categoryKey", "op": "in", "value": ["handling", "gantry"]}] }},
+      {"id": "frames", "number": 2, "title": "二、机架部分", "match": {"any": [{"field": "categoryKey", "op": "eq", "value": "frames"}] }},
+      {"id": "electrical", "number": 3, "title": "三、电气控制部分", "match": {"any": [{"field": "categoryKey", "op": "eq", "value": "electrical"}] }},
+      {"id": "tanks", "number": 4, "title": "四、槽体部分", "match": {"any": [{"field": "bom.role", "op": "eq", "value": "tank"}] }},
+      {"id": "peripherals", "number": 5, "title": "五、周边配置部分", "match": {"any": [{"field": "bom.shared", "op": "eq", "value": true}, {"field": "categoryKey", "op": "eq", "value": "peripherals"}] }}
+    ],
+    "assignmentOrder": ["confirmedBusinessChapter", "confirmedSourceChapter", "parentChapter", "configuredMatch"],
+    "ambiguousMatch": "keepSourceGroup",
+    "unmatched": {"title": "其他设备", "number": 6},
+    "hideEmpty": true,
+    "headingStyle": "chapter",
+    "subtotal": {"enabled": true, "label": "本章小计", "style": "subtotal"}
+  },
+  "hierarchy": {
+    "mergeParentCode": true,
+    "parentFields": ["business.parentId", "parentId", "bom.parentId"],
+    "multipleParentFields": ["business.relatedParentIds", "bom.relatedParentIds"],
+    "conflictingParent": "keepStandaloneAndFlag",
+    "missingParent": "keepStandaloneAndFlag",
+    "cycle": "rejectExport",
+    "sharedItem": {"placement": "configuredChapter", "renderOnce": true, "references": "allParentCodes"},
+    "order": "parentThenChildren",
+    "siblingOrder": ["confirmedBusinessOrder", "sourceOrder", "stableId"],
+    "numbering": {"mode": "generate", "scope": "sectionAndChapter", "root": "{chapter.number}-{sequence:02}", "child": "{parent.code}.{childSequence}", "resetRootPerChapter": true, "resetChildPerParent": true, "sourceCode": "keepAsMetadata"},
+    "indent": {"column": "description", "perLevel": 1, "maxLevel": 4}
+  },
+  "description": {
+    "join": "\n",
+    "omitEmpty": true,
+    "parts": [
+      {"fields": ["name"], "text": "{name}"},
+      {"fields": ["length", "width", "height"], "require": "all", "text": "尺寸：长{length}×宽{width}×高{height}mm（L×W×H）"},
+      {"fields": ["material", "thickness"], "join": "，", "items": [{"field": "material", "text": "{material}材质"}, {"field": "thickness", "text": "板厚{thickness}mm"}]},
+      {"fields": ["reinforcement"], "text": "补强：{reinforcement}"},
+      {"fields": ["brand"], "text": "品牌：{brand}"},
+      {"fields": ["remainingConfirmedSpec"], "text": "{remainingConfirmedSpec}"},
+      {"fields": ["relatedParentCodes"], "text": "配套设备：{relatedParentCodes}"}
+    ],
+    "valueSource": "validatedExportView",
+    "preserveUnformattedSpec": true,
+    "deduplicateStructuredFacts": true,
+    "incompleteDimensions": "retainOriginalSpec",
+    "unconfirmedFacts": "omitFromDescription"
+  },
+  "totals": {
+    "amountColumn": "amount",
+    "moneyScale": 2,
+    "rounding": "halfUp",
+    "taxModeSource": "quote.taxMode",
+    "taxRateSource": "quote.taxRate",
+    "missingTaxRate": "rejectTaxSummary",
+    "rows": [
+      {"key": "net", "label": "未税金额合计", "operation": "netFromValidatedQuote"},
+      {"key": "tax", "label": "税金（{quote.taxRate}%）", "operation": "taxFromValidatedQuote"},
+      {"key": "gross", "label": "含税金额合计", "operation": "grossFromValidatedQuote"},
+      {"key": "words", "label": "大写金额", "operation": "cnyUppercase", "source": "gross"}
+    ],
+    "mergeLabel": "allBeforeAmount",
+    "formulaStrategy": "detailAmountsThenChapterSubtotals",
+    "reconcileWithValidatedQuote": true,
+    "unpricedAmount": "blank",
+    "incompleteQuoteLabelPrefix": "已计价部分 · "
+  },
+  "styles": {
+    "base": {"font": {"name": "宋体", "size": 11}, "verticalAlign": "middle", "border": {"style": "thin", "color": "888888", "edges": "all"}},
+    "title": {"font": {"size": 16, "bold": true}, "horizontalAlign": "center"},
+    "columnHeader": {"font": {"bold": true}, "fill": "E8EDF2"},
+    "chapter": {"font": {"bold": true}, "merge": "allColumns"},
+    "subtotal": {"font": {"bold": true}, "fill": "E8EDF2"},
+    "detail": {"minRowHeight": 28, "autoHeight": true, "splitLongText": true, "minFontSize": 11}
+  }
+}

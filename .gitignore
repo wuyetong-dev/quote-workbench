@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+data/
+knowledge/*.json
+web/assets/fixed-header.png
+web/assets/company-logo.jpeg
+web/assets/pdf-*.pdf
+web/assets/pdf-letterhead.png
+web/assets/excel-reference.xlsx
+web/assets/customer-templates/*.png
+web/assets/customer-templates/*.json
+web/assets/customer-templates/*.xlsx
+*.sqlite3
+*.log
+.DS_Store
